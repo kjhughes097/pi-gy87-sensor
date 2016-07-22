@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <sys/time.h>
 
 const int HMC5883_ADDR = 0x00;
 
@@ -85,9 +86,12 @@ void readI2C(unsigned char* buffer, int bytes) {
 int main() {
 
     unsigned char whoAmIAddr[1] = {0x75};
-    unsigned char setup1[2] = {0x19,0x07};
-    unsigned char setup2[2] = {0x1B,0x08};
+    unsigned char setup1[2] = {0x19,0x07}; // sample rate divider (0x07 means 8kHz/(1 + 0x07) = 1kHz)
+    unsigned char setup2[2] = {0x1B,0x08}; // gyro range (0x08 means +/-500 degs/sec)
+    const float GYRO_DIV = 65.5;
     unsigned char setup3[2] = {0x6B,0x02};
+    unsigned char setup4[2] = {0x1C,0x00}; // accel range (0x00 means +/- 2g)
+    const float ACCEL_DIV = 16384;
     unsigned char accelBaseReg[1] = {ACCEL_XOUT_HI};
     unsigned char gyroBaseReg[1] = {GYRO_XOUT_HI};
     unsigned char tempBaseReg[1] = {TEMP_HI};
@@ -101,9 +105,20 @@ int main() {
     writeI2C(setup1, 2);
     writeI2C(setup2, 2);
     writeI2C(setup3, 2);
+    writeI2C(setup4, 2);
 
-    // read the accel X registers (hi and lo bytes)
+    float pitch = 0;
+    float roll = 0;
+    float pitchAccel;
+    float rollAccel;
+    struct timeval lastSample;
+    struct timeval thisSample;
+    struct timeval dtSample;
+    gettimeofday(&lastSample, NULL);
+
+    // main loop, reading sensors and calculating angle
     while(1) {
+
         writeI2C(tempBaseReg,1);
         readI2C(buff, 2);
         short int temp = (buff[0]<<8 | buff[1]);
@@ -112,22 +127,32 @@ int main() {
         
         writeI2C(accelBaseReg,1);
         readI2C(buff, 6);
-        short int x_val = (buff[0]<<8 | buff[1]);
-        short int y_val = (buff[2]<<8 | buff[3]);
-        short int z_val = (buff[4]<<8 | buff[5]);
+        float x_accel = ((short int)(buff[0]<<8 | buff[1]))/ACCEL_DIV;
+        float y_accel = ((short int)(buff[2]<<8 | buff[3]))/ACCEL_DIV;
+        float z_accel = ((short int)(buff[4]<<8 | buff[5]))/ACCEL_DIV;
         //printf("Accel Vals = %d : %d : %d\n", x_val, y_val, z_val);
 
         writeI2C(gyroBaseReg,1);
         readI2C(buff, 6);
-        float x = ((short int)(buff[0]<<8 | buff[1]))/65.5;
-        float y = ((short int)(buff[2]<<8 | buff[3]))/65.5;
-        float z = ((short int)(buff[4]<<8 | buff[5]))/65.5;
-        printf("GX=% 07.2f GY=% 07.2f GZ=% 07.2f AX=% 06d AY=% 06d AZ=% 06d TMP=% 06.2f\n", x, y, z, x_val, y_val, z_val, tmp);
+        float x_gyro = ((short int)(buff[0]<<8 | buff[1]))/65.5;
+        float y_gyro = ((short int)(buff[2]<<8 | buff[3]))/65.5;
+        float z_gyro = ((short int)(buff[4]<<8 | buff[5]))/65.5;
 
-        float pitch = (atan2f(y_val, z_val) + 3.14);
-        printf("Pitch = %06f\n", pitch);
+        gettimeofday(&thisSample, NULL);
+        timersub(&thisSample, &lastSample, &dtSample);
+        gettimeofday(&lastSample, NULL);
+        //printf("dtSample = %d uS : (%08.6f S)\n", dtSample.tv_usec, ((float)dtSample.tv_usec / 1000000));
+        //printf("GX=% 07.2f GY=% 07.2f GZ=% 07.2f AX=% 05.3f AY=% 05.3f AZ=% 05.3f TMP=% 06.2f\n", x_gyro, y_gyro, z_gyro, x_accel, y_accel, z_accel, tmp);
 
-        usleep(250000);
+        pitch += ((float)x_gyro * ((float)dtSample.tv_usec / 1000000));
+        roll -= ((float)y_gyro * ((float)dtSample.tv_usec / 1000000));
+        pitchAccel = (atan2f(x_accel, z_accel) + 3.14159265359) * (180 / 3.14159265359);
+        rollAccel = (atan2f(y_accel, z_accel) + 3.14159265359) * (180 / 3.14159265359);
+        pitch = (pitch * 0.98) + (pitchAccel * 0.02);
+        roll = (roll * 0.98) + (rollAccel * 0.02);
+        //float pitch = atan2f(y_accel, sqrt(pow(y_accel,2) - (pow(z_accel,2)))) * 57.2958;
+        printf("Pitch = %05.1f : Roll = %05.1f\n ", pitch, roll);
+
     }
 
 
