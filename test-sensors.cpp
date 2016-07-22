@@ -10,6 +10,7 @@
 #include <string.h>
 #include <math.h>
 #include <sys/time.h>
+#include <fstream>
 
 const int HMC5883_ADDR = 0x00;
 
@@ -115,7 +116,7 @@ int main() {
     struct timeval thisSample;
     struct timeval dtSample;
     gettimeofday(&lastSample, NULL);
-
+    int count = 15;
     // main loop, reading sensors and calculating angle
     while(1) {
 
@@ -151,7 +152,19 @@ int main() {
         pitch = (pitch * 0.98) + (pitchAccel * 0.02);
         roll = (roll * 0.98) + (rollAccel * 0.02);
         //float pitch = atan2f(y_accel, sqrt(pow(y_accel,2) - (pow(z_accel,2)))) * 57.2958;
-        printf("Pitch = %05.1f : Roll = %05.1f\n ", pitch, roll);
+        //printf("Pitch = %05.1f : Roll = %05.1f\n ", pitch, roll);
+        
+        count--;
+        if(count < 0) {
+            FILE *plotFile;
+            plotFile = fopen("/home/pi/pi-gy87-sensor/plot.dat", "w");
+            for(int i=-10; i<11; i++) {
+                fprintf(plotFile, "%i\t%03.0f\n",i,(i * tan(pitch / (180 / 3.14159265359))));
+                fflush(plotFile);
+            }
+            fclose(plotFile);
+            count = 15;
+        }
 
     }
 
