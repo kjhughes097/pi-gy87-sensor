@@ -18,8 +18,31 @@
 
 void MPU6050::reset()
 {
-    unsigned char resetPacket[2] = {MPU6050_REG_PWR_MGMT_1, 0x80};
-    writeRegister(resetPacket, 2);
+    writeRegister8(MPU6050_REG_PWR_MGMT_1, 0x80);
+}
+
+bool MPU6050::getBypassEnable()
+{
+    unsigned char currentVal = (unsigned char)readRegister8(MPU6050_REG_PWR_MGMT_1);
+    if (currentVal & 0x02)
+    {
+        return true;
+    }
+    return false;
+}
+
+void MPU6050::setBypassEnable(bool enabled)
+{
+    unsigned char currentVal = (unsigned char)readRegister8(MPU6050_REG_PWR_MGMT_1);
+    if (enabled)
+    {
+        currentVal |= 0x02;
+    }
+    else
+    {
+        currentVal &= 0xFD;
+    }
+    writeRegister8(MPU6050_REG_INT_PIN_CONF, currentVal);
 }
 
 bool MPU6050::whoAmI()
@@ -53,6 +76,12 @@ void MPU6050::writeRegister(unsigned char* data, int bytes)
         }
         close(*deviceName);
     }
+}
+
+void MPU6050::writeRegister8(unsigned char registerAddr, unsigned char value)
+{
+    unsigned char buffer[2] = {registerAddr, value};
+    writeRegister(buffer, 2);
 }
 
 void MPU6050::readRegister(unsigned char* buffer, int bytes)

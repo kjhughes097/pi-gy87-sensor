@@ -71,8 +71,8 @@ class MPU6050
 
         void reset(void);
         
-        // void setBypassEnable(bool);
-        // bool getBypassEnable(void);
+        void setBypassEnable(bool);
+        bool getBypassEnable(void);
         
         // clockSource getClockSource(void);
         // void setClockSource(clockSource);
@@ -90,4 +90,5 @@ class MPU6050
         int readRegister8(unsigned char);
         int readRegister16(unsigned char);
         void writeRegister(unsigned char*, int);
+        void writeRegister8(unsigned char, unsigned char);
 };

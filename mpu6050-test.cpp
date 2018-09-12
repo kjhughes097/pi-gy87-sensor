@@ -13,6 +13,7 @@
      MPU6050 *mpu = new MPU6050();
      if (mpu->whoAmI())
      {
+         mpu->setBypassEnable(false);
          return 1;
      }
      return 0;
