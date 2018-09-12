@@ -57,7 +57,23 @@ bool MPU6050::whoAmI()
     return false;
 }
 
+void MPU6050::setClockSource(clockSource clock)
+{
+    uint8_t currentVal = (uint8_t)readRegister8(MPU6050_REG_PWR_MGMT_1);
+    currentVal &= 0xF8; // mask out all other bits
+    currentVal += clock; // add the clock value
+    writeRegister8(MPU6050_REG_PWR_MGMT_1, currentVal);
+}
 
+clockSource MPU6050::getClockSource()
+{
+    uint8_t currentVal = (uint8_t)readRegister8(MPU6050_REG_PWR_MGMT_1);
+    currentVal &= 0x07;
+    return (clockSource)currentVal;
+}
+
+
+// private functions
 void MPU6050::writeRegister(uint8_t* data, uint8_t bytes)
 {
     int i2cHandle;

@@ -75,8 +75,8 @@ class MPU6050
         void setBypassEnable(bool);
         bool getBypassEnable(void);
         
-        // clockSource getClockSource(void);
-        // void setClockSource(clockSource);
+        clockSource getClockSource(void);
+        void setClockSource(clockSource);
         
         // fullScaleAcclRange getFullScaleAcclRange(void);
         // void setFullScaleAcclRange(fullScaleAcclRange);
