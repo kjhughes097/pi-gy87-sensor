@@ -14,19 +14,14 @@
 int main()
 {
     MPU6050 *mpu = new MPU6050();
+    mpu->reset();
     if (mpu->whoAmI())
     {
         printf("WhoAmI was okay\n");
-        if (mpu->getBypassEnable())
-        {
-            printf("Bypass is ENABLED\n");
-        }
-        else
-        {
-            printf("Bypass is DISABLED\n");
-        }
+        bool enabled = mpu->getBypassEnable();
+        printf("Bypass is %s\n", enabled ? "ENABLED" : "DISABLED");
         printf("Toggling...\n");
-        mpu->setBypassEnable(mpu->getBypassEnable());
+        mpu->setBypassEnable(!enabled);
         return 1;
     }
     return 0;

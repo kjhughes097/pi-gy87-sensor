@@ -6,7 +6,7 @@
  *
  */
 
-
+#include <cstdint>
 
 #define MPU6050_ADDR                  0x68
 
@@ -30,6 +30,7 @@
 #define MPU6050_REG_GYRO_ZOUT_H       0x47
 #define MPU6050_REG_GYRO_ZOUT_L       0x48
 
+#define MPU6050_REG_USER_CNTL         0x6A
 #define MPU6050_REG_PWR_MGMT_1        0x6B
 
 #define MPU6050_REG_WHO_AM_I          0x75
@@ -86,9 +87,9 @@ class MPU6050
         bool whoAmI(void);
     
     private:
-        void readRegister(unsigned char*, int);
-        int readRegister8(unsigned char);
-        int readRegister16(unsigned char);
-        void writeRegister(unsigned char*, int);
-        void writeRegister8(unsigned char, unsigned char);
+        void readRegister(uint8_t*, uint8_t);
+        int readRegister8(uint8_t);
+        int readRegister16(uint8_t);
+        void writeRegister(uint8_t*, uint8_t);
+        void writeRegister8(uint8_t, uint8_t);
 };

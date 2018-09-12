@@ -10,6 +10,7 @@
 #include <fcntl.h>//Needed for I2C port
 #include <sys/ioctl.h>//Needed for I2C port
 #include <linux/i2c-dev.h>//Needed for I2C port
+#include <cstdint>
 #include <stdio.h>
 #include <string.h>
 
@@ -23,7 +24,7 @@ void MPU6050::reset()
 
 bool MPU6050::getBypassEnable()
 {
-    unsigned char currentVal = (unsigned char)readRegister8(MPU6050_REG_PWR_MGMT_1);
+    uint8_t currentVal = (uint8_t)readRegister8(MPU6050_REG_INT_PIN_CONF);
     if (currentVal & 0x02)
     {
         return true;
@@ -33,7 +34,9 @@ bool MPU6050::getBypassEnable()
 
 void MPU6050::setBypassEnable(bool enabled)
 {
-    unsigned char currentVal = (unsigned char)readRegister8(MPU6050_REG_PWR_MGMT_1);
+    // make sure I2C_MST_EN (reg 0x6A) bit 5 is set to 0...
+    writeRegister8(MPU6050_REG_USER_CNTL, 0x00);
+    uint8_t currentVal = (uint8_t)readRegister8(MPU6050_REG_INT_PIN_CONF);
     if (enabled)
     {
         currentVal |= 0x02;
@@ -55,7 +58,7 @@ bool MPU6050::whoAmI()
 }
 
 
-void MPU6050::writeRegister(unsigned char* data, int bytes)
+void MPU6050::writeRegister(uint8_t* data, uint8_t bytes)
 {
     int i2cHandle;
 
@@ -78,13 +81,13 @@ void MPU6050::writeRegister(unsigned char* data, int bytes)
     }
 }
 
-void MPU6050::writeRegister8(unsigned char registerAddr, unsigned char value)
+void MPU6050::writeRegister8(uint8_t registerAddr, uint8_t value)
 {
-    unsigned char buffer[2] = {registerAddr, value};
+    uint8_t buffer[2] = {registerAddr, value};
     writeRegister(buffer, 2);
 }
 
-void MPU6050::readRegister(unsigned char* buffer, int bytes)
+void MPU6050::readRegister(uint8_t* buffer, uint8_t bytes)
 {
     int i2cHandle;
 
@@ -111,17 +114,17 @@ void MPU6050::readRegister(unsigned char* buffer, int bytes)
     }
 }
 
-int MPU6050::readRegister8(unsigned char registerAddr)
+int MPU6050::readRegister8(uint8_t registerAddr)
 {
-    unsigned char buffer[1] = {registerAddr};
+    uint8_t buffer[1] = {registerAddr};
     writeRegister(buffer, 1); // send the register we are interested in
     readRegister(buffer, 1); // get the value from it
     return (int)buffer[0];
 }
 
-int MPU6050::readRegister16(unsigned char registerAddr)
+int MPU6050::readRegister16(uint8_t registerAddr)
 {
-    unsigned char buffer[2] = {registerAddr, 0};
+    uint8_t buffer[2] = {registerAddr, 0};
     writeRegister(buffer, 1); // send the register we are interested in
     readRegister(buffer, 2); // get the value from it (HI byte) and the next (LO byte)
     int retVal = buffer[0] * 0xFF;
