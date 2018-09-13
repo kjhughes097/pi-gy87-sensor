@@ -50,7 +50,7 @@ typedef enum
     FS_ACCL_4G  = 0x01,
     FS_ACCL_8G  = 0x02,
     FS_ACCL_16G = 0x03
-} fullScaleAcclRange;
+} fullScaleAccRange;
 
 typedef enum
 {
@@ -70,20 +70,26 @@ class MPU6050
         // MPU6050();
         // ~MPU6050();
 
+        // bit 7 of MPU6050_REG_PWR_MGMT_1
         void reset(void);
         
+        // bit 1 of MPU6050_REG_INT_PIN_CONF
         void setBypassEnable(bool);
         bool getBypassEnable(void);
         
+        // bits 0-2 of MPU6050_REG_PWR_MGMT_1
         clockSource getClockSource(void);
         void setClockSource(clockSource);
         
-        // fullScaleAcclRange getFullScaleAcclRange(void);
-        // void setFullScaleAcclRange(fullScaleAcclRange);
+        // bits 3-4 of MPU6050_REG_ACC_CONF
+        fullScaleAccRange getFullScaleAccRange(void);
+        void setFullScaleAccRange(fullScaleAccRange);
         
-        // fullScaleGyroRange getFullScaleGyroRange(void);
-        // void setFullScaleGyroRange(fullScaleGyroRange);
+        // bits 3-4 of MPU6050_REG_GYRO_CONF
+        fullScaleGyroRange getFullScaleGyroRange(void);
+        void setFullScaleGyroRange(fullScaleGyroRange);
         
+        // bits 1-6 of MPU6050_REG_WHO_AM_I
         bool whoAmI(void);
     
     private:

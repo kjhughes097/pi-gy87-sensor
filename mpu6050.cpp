@@ -57,6 +57,13 @@ bool MPU6050::whoAmI()
     return false;
 }
 
+clockSource MPU6050::getClockSource()
+{
+    uint8_t currentVal = (uint8_t)readRegister8(MPU6050_REG_PWR_MGMT_1);
+    currentVal &= 0x07;
+    return (clockSource)currentVal;
+}
+
 void MPU6050::setClockSource(clockSource clock)
 {
     uint8_t currentVal = (uint8_t)readRegister8(MPU6050_REG_PWR_MGMT_1);
@@ -65,11 +72,40 @@ void MPU6050::setClockSource(clockSource clock)
     writeRegister8(MPU6050_REG_PWR_MGMT_1, currentVal);
 }
 
-clockSource MPU6050::getClockSource()
+fullScaleAccRange MPU6050::getFullScaleAccRange()
 {
-    uint8_t currentVal = (uint8_t)readRegister8(MPU6050_REG_PWR_MGMT_1);
-    currentVal &= 0x07;
-    return (clockSource)currentVal;
+    uint8_t currentVal = (uint8_t)readRegister8(MPU6050_REG_ACC_CONF);
+    currentVal &= 0x18;
+    currentVal >>= 3;
+    return (fullScaleAccRange)currentVal;
+}
+
+void MPU6050::setFullScaleAccRange(fullScaleAccRange range)
+{
+    uint8_t currentVal = (uint8_t)readRegister8(MPU6050_REG_ACC_CONF);
+    currentVal &= 0xF8; // mask out all other bits
+    uint8_t rangeVal = (int)range;
+    rangeVal <<= 3;
+    currentVal += rangeVal; // add the range value
+    writeRegister8(MPU6050_REG_ACC_CONF, currentVal);
+}
+
+fullScaleGyroRange MPU6050::getFullScaleGyroRange()
+{
+    uint8_t currentVal = (uint8_t)readRegister8(MPU6050_REG_GYRO_CONF);
+    currentVal &= 0x18;
+    currentVal >>= 3;
+    return (fullScaleGyroRange)currentVal;
+}
+
+void MPU6050::setFullScaleGyroRange(fullScaleGyroRange range)
+{
+    uint8_t currentVal = (uint8_t)readRegister8(MPU6050_REG_GYRO_CONF);
+    currentVal &= 0xF8; // mask out all other bits
+    uint8_t rangeVal = (int)range;
+    rangeVal <<= 3;
+    currentVal += rangeVal; // add the range value
+    writeRegister8(MPU6050_REG_GYRO_CONF, currentVal);
 }
 
 
