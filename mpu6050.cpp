@@ -138,7 +138,7 @@ void MPU6050::writeRegister(uint8_t* data, uint8_t bytes)
             for (int i=0; i< bytes; i++)
             {
                 char byteStr[10];
-                sprintf(byteStr, " - 0x%x2\n", data[i]);
+                sprintf(byteStr, " - 0x%02X\n", data[i]);
                 debugLog(byteStr);
             }
             write(i2cHandle, data, bytes);
@@ -183,7 +183,7 @@ void MPU6050::readRegister(uint8_t* buffer, uint8_t bytes)
                 for (int i=0; i< bytesRead; i++)
                 {
                     char byteStr[10];
-                    sprintf(byteStr, " - 0x%x2\n", buffer[i]);
+                    sprintf(byteStr, " - 0x%02X\n", buffer[i]);
                     debugLog(byteStr);
                 }
             }
