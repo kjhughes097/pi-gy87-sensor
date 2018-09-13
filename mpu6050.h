@@ -70,6 +70,9 @@ class MPU6050
         // MPU6050();
         // ~MPU6050();
 
+        // print out debug info
+        void setDebug(bool);
+
         // bit 7 of MPU6050_REG_PWR_MGMT_1
         void reset(void);
         
@@ -93,6 +96,8 @@ class MPU6050
         bool whoAmI(void);
     
     private:
+        bool debug;
+        void debugLog(const char*);
         void readRegister(uint8_t*, uint8_t);
         int readRegister8(uint8_t);
         int readRegister16(uint8_t);

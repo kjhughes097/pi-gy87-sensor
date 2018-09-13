@@ -14,6 +14,8 @@
 int main()
 {
     MPU6050 *mpu = new MPU6050();
+    mpu->setDebug(true);
+    
     mpu->reset();
     if (mpu->whoAmI())
     {

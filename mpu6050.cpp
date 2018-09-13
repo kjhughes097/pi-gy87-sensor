@@ -17,8 +17,14 @@
 #include "mpu6050.h"
 
 
+void MPU6050::setDebug(bool dbg)
+{
+    debug = dbg;
+}
+
 void MPU6050::reset()
 {
+    debugLog("Resetting device\n");
     writeRegister8(MPU6050_REG_PWR_MGMT_1, 0x80);
 }
 
@@ -121,14 +127,23 @@ void MPU6050::writeRegister(uint8_t* data, uint8_t bytes)
     }
     else 
     {
+        debugLog("writeRegister opened i2c device for RDWR\n");
         if (ioctl(i2cHandle, I2C_SLAVE, MPU6050_ADDR) < 0) 
         {
             printf("Error at ioctl\n");
         }
         else 
         {
+            debugLog("Writing to bytes to i2c :\n");
+            for (int i=0; i< bytes; i++)
+            {
+                char byteStr[10];
+                sprintf(byteStr, " - 0x%x2\n", data[i]);
+                debugLog(byteStr);
+            }
             write(i2cHandle, data, bytes);
         }
+        debugLog("writeRegister closing i2c device\n");
         close(*deviceName);
     }
 }
@@ -150,18 +165,30 @@ void MPU6050::readRegister(uint8_t* buffer, uint8_t bytes)
     }
     else 
     {
+        debugLog("readRegister opened i2c device for RDWR\n");
         if (ioctl(i2cHandle, I2C_SLAVE, MPU6050_ADDR) < 0) 
         {
             printf("Error at ioctl\n");
         }
         else 
         {
+            debugLog("Reading bytes from i2c :\n");
             int bytesRead = read(i2cHandle, buffer, bytes);
             if (bytes != bytesRead) 
             {
                 printf("Error reading from I2C, expected %i bytes, but got %i\n", bytes, bytesRead);
             }
+            else
+            {
+                for (int i=0; i< bytesRead; i++)
+                {
+                    char byteStr[10];
+                    sprintf(byteStr, " - 0x%x2\n", buffer[i]);
+                    debugLog(byteStr);
+                }
+            }
         }
+        debugLog("readRegister closing i2c device\n");
         close(*deviceName);
     }
 }
@@ -182,4 +209,12 @@ int MPU6050::readRegister16(uint8_t registerAddr)
     int retVal = buffer[0] * 0xFF;
     retVal += buffer[1];
     return retVal;
+}
+
+void MPU6050::debugLog(const char *message)
+{
+    if (this->debug)
+    {
+        printf("%s", message);
+    }
 }
